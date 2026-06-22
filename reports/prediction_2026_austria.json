@@ -1,0 +1,214 @@
+{
+  "meta": {
+    "season": 2026,
+    "round": 8,
+    "circuit_id": "red_bull_ring",
+    "race_date": "2026-06-28",
+    "rainfall": 0.0,
+    "model": "lightgbm",
+    "n_drivers": 20,
+    "generated_utc": "2026-06-18T12:12:38+00:00"
+  },
+  "predictions": [
+    {
+      "predicted_rank": 1,
+      "driver_code": "LEC",
+      "constructor_id": "ferrari",
+      "grid_position": 3,
+      "predicted_position_raw": 3.42,
+      "win_probability": 0.2328,
+      "podium_probability": 0.5572,
+      "points_probability": 0.9817
+    },
+    {
+      "predicted_rank": 2,
+      "driver_code": "HAM",
+      "constructor_id": "ferrari",
+      "grid_position": 4,
+      "predicted_position_raw": 4.107,
+      "win_probability": 0.1626,
+      "podium_probability": 0.4508,
+      "points_probability": 0.9651
+    },
+    {
+      "predicted_rank": 3,
+      "driver_code": "VER",
+      "constructor_id": "red_bull",
+      "grid_position": 1,
+      "predicted_position_raw": 4.175,
+      "win_probability": 0.153,
+      "podium_probability": 0.4426,
+      "points_probability": 0.9651
+    },
+    {
+      "predicted_rank": 4,
+      "driver_code": "RUS",
+      "constructor_id": "mercedes",
+      "grid_position": 6,
+      "predicted_position_raw": 4.548,
+      "win_probability": 0.1216,
+      "podium_probability": 0.3794,
+      "points_probability": 0.9522
+    },
+    {
+      "predicted_rank": 5,
+      "driver_code": "NOR",
+      "constructor_id": "mclaren",
+      "grid_position": 2,
+      "predicted_position_raw": 4.624,
+      "win_probability": 0.12,
+      "podium_probability": 0.3736,
+      "points_probability": 0.948
+    },
+    {
+      "predicted_rank": 6,
+      "driver_code": "PIA",
+      "constructor_id": "mclaren",
+      "grid_position": 5,
+      "predicted_position_raw": 4.865,
+      "win_probability": 0.1048,
+      "podium_probability": 0.3445,
+      "points_probability": 0.9404
+    },
+    {
+      "predicted_rank": 7,
+      "driver_code": "ANT",
+      "constructor_id": "mercedes",
+      "grid_position": 9,
+      "predicted_position_raw": 5.222,
+      "win_probability": 0.0828,
+      "podium_probability": 0.2937,
+      "points_probability": 0.9192
+    },
+    {
+      "predicted_rank": 8,
+      "driver_code": "TSU",
+      "constructor_id": "red_bull",
+      "grid_position": 10,
+      "predicted_position_raw": 8.162,
+      "win_probability": 0.0098,
+      "podium_probability": 0.0572,
+      "points_probability": 0.6448
+    },
+    {
+      "predicted_rank": 9,
+      "driver_code": "SAI",
+      "constructor_id": "williams",
+      "grid_position": 7,
+      "predicted_position_raw": 8.957,
+      "win_probability": 0.004,
+      "podium_probability": 0.029,
+      "points_probability": 0.5377
+    },
+    {
+      "predicted_rank": 10,
+      "driver_code": "ALO",
+      "constructor_id": "aston_martin",
+      "grid_position": 8,
+      "predicted_position_raw": 9.618,
+      "win_probability": 0.0031,
+      "podium_probability": 0.0209,
+      "points_probability": 0.4406
+    },
+    {
+      "predicted_rank": 11,
+      "driver_code": "HAD",
+      "constructor_id": "red_bull",
+      "grid_position": 18,
+      "predicted_position_raw": 9.728,
+      "win_probability": 0.0024,
+      "podium_probability": 0.0186,
+      "points_probability": 0.4218
+    },
+    {
+      "predicted_rank": 12,
+      "driver_code": "LAW",
+      "constructor_id": "rb",
+      "grid_position": 11,
+      "predicted_position_raw": 9.828,
+      "win_probability": 0.002,
+      "podium_probability": 0.018,
+      "points_probability": 0.4162
+    },
+    {
+      "predicted_rank": 13,
+      "driver_code": "GAS",
+      "constructor_id": "alpine",
+      "grid_position": 16,
+      "predicted_position_raw": 10.637,
+      "win_probability": 0.0008,
+      "podium_probability": 0.0092,
+      "points_probability": 0.3054
+    },
+    {
+      "predicted_rank": 14,
+      "driver_code": "HUL",
+      "constructor_id": "audi",
+      "grid_position": 13,
+      "predicted_position_raw": 12.175,
+      "win_probability": 0.0,
+      "podium_probability": 0.0018,
+      "points_probability": 0.1414
+    },
+    {
+      "predicted_rank": 15,
+      "driver_code": "BEA",
+      "constructor_id": "haas",
+      "grid_position": 14,
+      "predicted_position_raw": 12.589,
+      "win_probability": 0.0001,
+      "podium_probability": 0.0012,
+      "points_probability": 0.11
+    },
+    {
+      "predicted_rank": 16,
+      "driver_code": "OCO",
+      "constructor_id": "haas",
+      "grid_position": 15,
+      "predicted_position_raw": 12.867,
+      "win_probability": 0.0001,
+      "podium_probability": 0.001,
+      "points_probability": 0.0928
+    },
+    {
+      "predicted_rank": 17,
+      "driver_code": "STR",
+      "constructor_id": "aston_martin",
+      "grid_position": 12,
+      "predicted_position_raw": 13.393,
+      "win_probability": 0.0,
+      "podium_probability": 0.0004,
+      "points_probability": 0.0689
+    },
+    {
+      "predicted_rank": 18,
+      "driver_code": "DOO",
+      "constructor_id": "alpine",
+      "grid_position": 17,
+      "predicted_position_raw": 13.625,
+      "win_probability": 0.0,
+      "podium_probability": 0.0001,
+      "points_probability": 0.0548
+    },
+    {
+      "predicted_rank": 19,
+      "driver_code": "MAG",
+      "constructor_id": "haas",
+      "grid_position": 20,
+      "predicted_position_raw": 13.694,
+      "win_probability": 0.0,
+      "podium_probability": 0.0005,
+      "points_probability": 0.054
+    },
+    {
+      "predicted_rank": 20,
+      "driver_code": "BOR",
+      "constructor_id": "audi",
+      "grid_position": 19,
+      "predicted_position_raw": 14.125,
+      "win_probability": 0.0,
+      "podium_probability": 0.0002,
+      "points_probability": 0.0398
+    }
+  ]
+}

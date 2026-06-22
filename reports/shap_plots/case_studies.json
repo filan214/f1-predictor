@@ -1,0 +1,107 @@
+[
+  {
+    "case": "surprise_podium",
+    "driver_code": "LEC",
+    "constructor_id": "ferrari",
+    "grid": 19,
+    "actual_finish": 3,
+    "predicted_position": 5.91,
+    "base_value": 9.499,
+    "top_contributions": [
+      {
+        "feature": "constructor_points_per_race_5",
+        "shap": -1.206
+      },
+      {
+        "feature": "grid_clean",
+        "shap": 1.063
+      },
+      {
+        "feature": "grid_position",
+        "shap": 0.973
+      },
+      {
+        "feature": "perf_rating_pre",
+        "shap": -0.723
+      },
+      {
+        "feature": "constructor_position",
+        "shap": -0.69
+      },
+      {
+        "feature": "driver_avg_points_5",
+        "shap": -0.624
+      }
+    ]
+  },
+  {
+    "case": "wet_race_points",
+    "driver_code": "VER",
+    "constructor_id": "red_bull",
+    "grid": 1,
+    "actual_finish": 5,
+    "predicted_position": 1.54,
+    "base_value": 9.499,
+    "top_contributions": [
+      {
+        "feature": "grid_position",
+        "shap": -2.022
+      },
+      {
+        "feature": "grid_clean",
+        "shap": -1.614
+      },
+      {
+        "feature": "constructor_points_per_race_5",
+        "shap": -1.019
+      },
+      {
+        "feature": "driver_avg_points_5",
+        "shap": -0.528
+      },
+      {
+        "feature": "perf_rating_pre",
+        "shap": -0.519
+      },
+      {
+        "feature": "gap_to_pole_seconds",
+        "shap": -0.446
+      }
+    ]
+  },
+  {
+    "case": "pole_to_win",
+    "driver_code": "VER",
+    "constructor_id": "red_bull",
+    "grid": 1,
+    "actual_finish": 1,
+    "predicted_position": 2.65,
+    "base_value": 9.499,
+    "top_contributions": [
+      {
+        "feature": "grid_position",
+        "shap": -2.28
+      },
+      {
+        "feature": "grid_clean",
+        "shap": -1.798
+      },
+      {
+        "feature": "constructor_points_per_race_5",
+        "shap": -0.949
+      },
+      {
+        "feature": "driver_avg_points_5",
+        "shap": -0.523
+      },
+      {
+        "feature": "gap_to_pole_seconds",
+        "shap": -0.505
+      },
+      {
+        "feature": "perf_rating_pre",
+        "shap": -0.428
+      }
+    ]
+  }
+]
