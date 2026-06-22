@@ -41,7 +41,9 @@ CHECKPOINT_DIR = RAW_DIR / "checkpoints"
 FASTF1_CACHE_DIR = "data/fastf1_cache"
 
 logger = logging.getLogger("ingestion")
+ 
 
+"""sasasas"""""
 
 # --------------------------------------------------------------------------- #
 # Logging
