@@ -7,14 +7,20 @@ structured JSON for the dashboard.
 
 Usage::
 
+    # Manual grid:
     python run_predict.py --season 2026 --circuit red_bull_ring \
       --date 2026-06-28 --rainfall 0 \
       --grid "VER:1,NOR:2,LEC:3,HAM:4,PIA:5,RUS:6,SAI:7,ALO:8,ANT:9,TSU:10,\
 LAW:11,STR:12,HUL:13,BEA:14,OCO:15,GAS:16,DOO:17,HAD:18,BOR:19,MAG:20"
 
+    # Real qualifying grid, fetched automatically (ingests the season if needed):
+    python run_predict.py --season 2026 --round 9 --circuit silverstone \
+      --date 2026-07-06 --auto-grid
+
 The round number and a friendly output filename are looked up from
 ``data/raw/races.csv`` when the season is present there; otherwise pass
-``--round`` and/or ``--out`` explicitly.
+``--round`` and/or ``--out`` explicitly. ``--auto-grid`` needs a round number to
+look up qualifying, so pass ``--round`` when the race isn't in ``races.csv`` yet.
 """
 
 from __future__ import annotations
@@ -30,6 +36,7 @@ import pandas as pd
 
 from src.inference.build_race_features import build_pre_race_features
 from src.inference.predict_race import predict_race
+from src.inference.qualifying import fetch_qualifying_grid
 
 RACES_CSV = Path("data/raw/races.csv")
 REPORTS_DIR = Path("reports")
@@ -88,10 +95,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--date", required=True, help="race date YYYY-MM-DD")
     parser.add_argument("--rainfall", type=float, default=0.0,
                         help="forecast rainfall (>0 sets the wet-race flag).")
-    parser.add_argument("--grid", required=True,
-                        help='starting grid as "CODE:POS,CODE:POS,..."')
+    parser.add_argument("--grid", default=None,
+                        help='starting grid as "CODE:POS,CODE:POS,..." '
+                             "(omit if using --auto-grid).")
+    parser.add_argument("--auto-grid", action="store_true",
+                        help="fetch the real qualifying grid from "
+                             "data/raw/qualifying.csv for --season/--round, "
+                             "ingesting the season first if it's missing.")
     parser.add_argument("--round", type=int, default=None,
-                        help="round number (else looked up from races.csv).")
+                        help="round number (else looked up from races.csv). "
+                             "Required for --auto-grid if the race isn't in "
+                             "races.csv yet.")
     parser.add_argument("--features-path", default="data/processed/features.parquet")
     parser.add_argument("--out", default=None, help="output JSON path.")
     args = parser.parse_args(argv)
@@ -101,13 +115,23 @@ def main(argv: list[str] | None = None) -> int:
         datefmt="%H:%M:%S", handlers=[logging.StreamHandler(sys.stdout)],
     )
 
-    grid = parse_grid(args.grid)
+    if bool(args.grid) == bool(args.auto_grid):
+        parser.error("provide exactly one of --grid or --auto-grid.")
+
     looked_round, tag = lookup_race(args.season, args.circuit)
     round_num = args.round if args.round is not None else (looked_round or 0)
-    if looked_round is None:
+    if looked_round is None and args.round is None:
         logger.warning("Race not found in races.csv for season %s circuit %s; "
-                       "using round=%d (ingest the season for the real round).",
+                       "using round=%d (pass --round for the real round).",
                        args.season, args.circuit, round_num)
+
+    if args.auto_grid:
+        if round_num == 0:
+            parser.error("--auto-grid needs a round number; pass --round N "
+                         "(the race isn't in races.csv yet).")
+        grid = fetch_qualifying_grid(args.season, round_num)
+    else:
+        grid = parse_grid(args.grid)
 
     features_df = build_pre_race_features(
         season=args.season, round_num=round_num, circuit_id=args.circuit,
