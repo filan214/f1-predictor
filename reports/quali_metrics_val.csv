@@ -1,0 +1,6 @@
+model,mae,spearman,pole_acc,top10_acc,n_rows
+baseline_championship,3.9545,0.5822,0.5,0.7182,440
+random_forest,3.6304,0.6084,0.5,0.7545,440
+xgboost,3.5888,0.6022,0.5,0.7591,440
+lightgbm,3.6258,0.6001,0.5455,0.7364,440
+stack,3.6688,0.6095,0.5,0.7455,440
