@@ -17,6 +17,9 @@ LAW:11,STR:12,HUL:13,BEA:14,OCO:15,GAS:16,DOO:17,HAD:18,BOR:19,MAG:20"
     python run_predict.py --season 2026 --round 9 --circuit silverstone \
       --date 2026-07-06 --auto-grid
 
+    # Fully automatic — detect the next race, fetch its grid, predict:
+    python run_predict.py --next-race
+
 The round number and a friendly output filename are looked up from
 ``data/raw/races.csv`` when the season is present there; otherwise pass
 ``--round`` and/or ``--out`` explicitly. ``--auto-grid`` needs a round number to
@@ -37,6 +40,7 @@ import pandas as pd
 from src.inference.build_race_features import build_pre_race_features
 from src.inference.predict_race import predict_race
 from src.inference.qualifying import fetch_qualifying_grid
+from src.inference.schedule import find_next_race
 
 RACES_CSV = Path("data/raw/races.csv")
 REPORTS_DIR = Path("reports")
@@ -90,9 +94,13 @@ def format_table(result: pd.DataFrame) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Predict an upcoming F1 race.")
-    parser.add_argument("--season", type=int, required=True)
-    parser.add_argument("--circuit", required=True, help="circuit_id, e.g. red_bull_ring")
-    parser.add_argument("--date", required=True, help="race date YYYY-MM-DD")
+    parser.add_argument("--next-race", action="store_true",
+                        help="auto-detect the next upcoming race from races.csv, "
+                             "fetch its qualifying grid, and predict. Needs no "
+                             "other flags.")
+    parser.add_argument("--season", type=int, default=None)
+    parser.add_argument("--circuit", default=None, help="circuit_id, e.g. red_bull_ring")
+    parser.add_argument("--date", default=None, help="race date YYYY-MM-DD")
     parser.add_argument("--rainfall", type=float, default=0.0,
                         help="forecast rainfall (>0 sets the wet-race flag).")
     parser.add_argument("--grid", default=None,
@@ -115,43 +123,57 @@ def main(argv: list[str] | None = None) -> int:
         datefmt="%H:%M:%S", handlers=[logging.StreamHandler(sys.stdout)],
     )
 
-    if bool(args.grid) == bool(args.auto_grid):
-        parser.error("provide exactly one of --grid or --auto-grid.")
-
-    looked_round, tag = lookup_race(args.season, args.circuit)
-    round_num = args.round if args.round is not None else (looked_round or 0)
-    if looked_round is None and args.round is None:
-        logger.warning("Race not found in races.csv for season %s circuit %s; "
-                       "using round=%d (pass --round for the real round).",
-                       args.season, args.circuit, round_num)
-
-    if args.auto_grid:
-        if round_num == 0:
-            parser.error("--auto-grid needs a round number; pass --round N "
-                         "(the race isn't in races.csv yet).")
-        grid = fetch_qualifying_grid(args.season, round_num)
+    if args.next_race:
+        # Fully automatic: detect the next race, then fetch its grid.
+        nxt = find_next_race()
+        season, round_num = nxt.season, nxt.round
+        circuit_id, date_str, tag = nxt.circuit_id, nxt.race_date, nxt.tag
+        if nxt.days_until <= 3 and args.rainfall == 0.0:
+            print(f"\n[!] {circuit_id} is {nxt.days_until} day(s) away and no "
+                  "--rainfall was set. If rain is forecast, re-run with "
+                  "--rainfall <mm> to enable the wet-race flag.\n")
+        grid = fetch_qualifying_grid(season, round_num)
     else:
-        grid = parse_grid(args.grid)
+        missing = [name for name, val in (("--season", args.season),
+                   ("--circuit", args.circuit), ("--date", args.date)) if not val]
+        if missing:
+            parser.error(f"{', '.join(missing)} required unless --next-race is used.")
+        if bool(args.grid) == bool(args.auto_grid):
+            parser.error("provide exactly one of --grid or --auto-grid.")
+        season, circuit_id, date_str = args.season, args.circuit, args.date
+        looked_round, tag = lookup_race(season, circuit_id)
+        round_num = args.round if args.round is not None else (looked_round or 0)
+        if looked_round is None and args.round is None:
+            logger.warning("Race not found in races.csv for season %s circuit %s; "
+                           "using round=%d (pass --round for the real round).",
+                           season, circuit_id, round_num)
+        if args.auto_grid:
+            if round_num == 0:
+                parser.error("--auto-grid needs a round number; pass --round N "
+                             "(the race isn't in races.csv yet).")
+            grid = fetch_qualifying_grid(season, round_num)
+        else:
+            grid = parse_grid(args.grid)
 
     features_df = build_pre_race_features(
-        season=args.season, round_num=round_num, circuit_id=args.circuit,
-        race_date=args.date, grid=grid, features_path=args.features_path,
+        season=season, round_num=round_num, circuit_id=circuit_id,
+        race_date=date_str, grid=grid, features_path=args.features_path,
         rainfall=args.rainfall,
     )
     result = predict_race(features_df)
 
-    print(f"\n=== Predicted {args.season} round {round_num} — {args.circuit} "
-          f"({args.date}, rainfall={args.rainfall}) ===")
+    print(f"\n=== Predicted {season} round {round_num} — {circuit_id} "
+          f"({date_str}, rainfall={args.rainfall}) ===")
     print(format_table(result))
 
-    out_path = Path(args.out) if args.out else REPORTS_DIR / f"prediction_{args.season}_{tag}.json"
+    out_path = Path(args.out) if args.out else REPORTS_DIR / f"prediction_{season}_{tag}.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "meta": {
-            "season": args.season,
+            "season": season,
             "round": round_num,
-            "circuit_id": args.circuit,
-            "race_date": args.date,
+            "circuit_id": circuit_id,
+            "race_date": date_str,
             "rainfall": args.rainfall,
             "model": "lightgbm",
             "n_drivers": len(result),
