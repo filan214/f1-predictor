@@ -163,7 +163,7 @@ def main(argv: list[str] | None = None) -> int:
             entries = resolve_entry_list(season)
             quali_features = build_pre_quali_features(
                 season, round_num, circuit_id, date_str, entries,
-                rainfall=args.rainfall,
+                features_path=args.features_path, rainfall=args.rainfall,
             )
             quali_pred = predict_quali(quali_features)
             grid = predicted_grid_dict(quali_pred)
@@ -197,7 +197,7 @@ def main(argv: list[str] | None = None) -> int:
                        if args.entries else resolve_entry_list(season))
             quali_features = build_pre_quali_features(
                 season, round_num, circuit_id, date_str, entries,
-                rainfall=args.rainfall,
+                features_path=args.features_path, rainfall=args.rainfall,
             )
             quali_pred = predict_quali(quali_features)
             grid = predicted_grid_dict(quali_pred)

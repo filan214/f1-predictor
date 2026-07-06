@@ -88,6 +88,62 @@ Step 5 prints a ranked table and writes `reports/prediction_2026_austria.json`.
 
 ---
 
+## Qualifying-prediction model (two-stage forecasting)
+
+The race model above needs a real starting grid as input. A second,
+independent model (`src/models/quali_*`, `src/inference/*quali*`) predicts
+**the grid itself** — trained the same way (temporal split, Optuna-tuned
+RF/XGB/LGBM stack) on a qualifying-safe feature set (ratings, rolling finish
+form, standings, circuit, weather, plus new rolling-qualifying features) that
+excludes every column derived from qualifying/grid data.
+
+Chain it into a race forecast **before qualifying has happened** with:
+
+```bash
+# Train + evaluate the qualifying model once (writes models/quali_*.joblib)
+python -m src.models.train_quali
+python -m src.models.evaluate_quali
+
+# Predict the grid, then the race, in one command
+python run_predict.py --season 2026 --round 10 --circuit spa \
+  --date 2026-07-19 --predict-grid
+```
+
+`--next-race` uses this automatically as a fallback whenever real qualifying
+isn't available yet. The output JSON's `meta.grid_source` is `"real"`,
+`"predicted"`, or `"manual"` so consumers can tell which kind of forecast
+they're looking at, and a `quali_prediction` block is included whenever the
+grid was predicted.
+
+**Results (2024 test season, 479 driver-races)** — `predict_quali` uses the
+stack ensemble in production:
+
+| Model | MAE (grid positions) ↓ | Spearman ↑ | Pole accuracy ↑ |
+|-------|------:|-----------:|------:|
+| Baseline (championship-standings order) | 3.34 | 0.69 | 33% |
+| **Stack ensemble** *(production)* | **3.31** | 0.68 | **46%** |
+| LightGBM | 3.21 | 0.68 | 29% |
+| Random Forest | 3.25 | 0.69 | 46% |
+
+**Honest reading:** on raw grid-position error the qualifying stack barely
+beats the standings-order baseline (3.31 vs. 3.34 MAE) — qualifying pace is a
+genuinely hard, noisy target, much harder than race finish (~3.3 grid slots
+of error here vs. **~2.2 finishing positions** for the race model above).
+Where it clearly earns its keep is **pole prediction: 46% correct vs. the
+baseline's 33%**. Model selection happened on the 2023 validation season
+(leakage-free), where the trained models beat the baseline more clearly
+(baseline MAE 3.95 → ~3.59 for the trained models) — the smaller margin on
+the 2024 test season is honest validation→test variance, not a
+cherry-picked result.
+
+**This is strictly less reliable than a real grid.** Qualifying pace is
+dominated by current-season car development, which the carried-forward
+rating/form features only approximate. `--predict-grid` forecasts inherit the
+qualifying model's own error on top of the race model's — swap to
+`--auto-grid` once real qualifying results exist for a genuine forecast.
+
+---
+
 ## Project structure
 
 ```
@@ -95,7 +151,9 @@ src/
 ├── ingestion/   ergast.py, fastf1_collector.py      — API + telemetry collection
 ├── features/    driver_ratings.py (ELO), rolling.py, circuit.py, weather.py
 ├── models/      dataset.py, train.py, evaluate.py, explain.py (SHAP), baseline.py
-└── inference/   build_race_features.py, predict_race.py   — live forecasting
+│                quali_dataset.py, train_quali.py, evaluate_quali.py, quali_baseline.py — qualifying model
+└── inference/   build_race_features.py, predict_race.py,
+                 build_quali_features.py, predict_quali.py  — live forecasting (race + qualifying)
 notebooks/       02_feature_analysis.ipynb, 03_model_results.ipynb
 reports/         metrics CSVs, SHAP plots, prediction JSONs
 run_ingestion.py, run_predict.py                     — CLI entry points
@@ -108,6 +166,7 @@ run_ingestion.py, run_predict.py                     — CLI entry points
 - **The winner is barely predictable.** Even the best model is right ~58% of the time; F1 is genuinely high-variance (safety cars, strategy, DNFs). The model is far better at the *overall order* than at the *podium lottery*.
 - **The 2026 forecast is "form carried forward."** The model has never seen a 2026 car, and **2026 is a major regulation reset** — so treat that prediction as *current driver/team form projected onto a new season*, not a calibrated 2026 probability. Swap in the **real qualifying grid** after Saturday for a genuine forecast.
 - **No mid-race dynamics.** This predicts from the pre-race state only; it doesn't model in-race strategy, tyre degradation live, or weather changes during the race.
+- **`--predict-grid` forecasts stack two models' error.** The qualifying model beats a championship-order baseline by a real but modest margin on grid-position MAE (3.31 vs. 3.34) — its clearest value is in pole prediction (46% vs. 33%), not average grid accuracy. Qualifying pace is a noisier target than race finish. A race forecast built from a *predicted* grid is strictly rougher than one built from a real grid; use `--auto-grid` once qualifying has actually happened.
 
 ---
 
